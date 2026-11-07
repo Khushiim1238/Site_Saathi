@@ -13,10 +13,21 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const DEFAULT_INITIAL_USER: User = {
+  id: 'usr_agent1',
+  name: 'Ramesh (Field)',
+  email: 'ramesh@veercoverblock.com',
+  phone: '9876543211',
+  role: 'FIELD_AGENT',
+  pin: '1234',
+  is_active: 1,
+  created_at: new Date().toISOString(),
+};
+
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>([DEFAULT_INITIAL_USER]);
+  const [currentUser, setCurrentUser] = useState<User>(DEFAULT_INITIAL_USER);
+  const [loading, setLoading] = useState(false);
 
   const fetchUsers = async () => {
     try {

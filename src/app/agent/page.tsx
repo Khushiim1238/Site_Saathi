@@ -262,6 +262,8 @@ export default function FieldAgentPage() {
     setSubmitting(true);
 
     try {
+      const activeAgentId = currentUser?.id || 'usr_agent1';
+
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -276,17 +278,23 @@ export default function FieldAgentPage() {
           construction_stage: constructionStage,
           material_requirements: selectedMaterials.join(', '),
           notes,
-          captured_by_id: currentUser.id,
+          captured_by_id: activeAgentId,
         }),
       });
 
-      const data = await res.json();
-      if (data.success) {
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // Response wasn't valid JSON
+      }
+
+      if (res.ok && data?.success) {
         localStorage.removeItem(DRAFT_STORAGE_KEY);
         setDraftRestored(false);
         setSuccessMessage(true);
 
-        // Reset
+        // Reset form
         setProjectName('');
         setContactName('');
         setContactPhone('');
@@ -297,10 +305,10 @@ export default function FieldAgentPage() {
         setLongitude(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setFormError(data.error || 'Failed to record site.');
+        setFormError(data?.error || `Server responded with error (${res.status}). Please try again.`);
       }
     } catch (err: any) {
-      setFormError('Network error. Please try again.');
+      setFormError(err?.message || 'Network connection failed. Please check internet connection.');
     } finally {
       setSubmitting(false);
     }

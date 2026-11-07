@@ -2,18 +2,37 @@ import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const dbPath = path.join(process.cwd(), 'data', 'crm.sqlite');
+const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const localDbPath = path.join(process.cwd(), 'data', 'crm.sqlite');
+const dbPath = isVercel ? path.join('/tmp', 'crm.sqlite') : localDbPath;
 
-// Ensure data folder exists
-const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+function ensureDbFile() {
+  const dataDir = path.dirname(dbPath);
+  if (!fs.existsSync(dataDir)) {
+    try {
+      fs.mkdirSync(dataDir, { recursive: true });
+    } catch (e) {
+      // ignore if exists or in /tmp
+    }
+  }
+
+  // On Vercel, copy bundled database to /tmp so all seed users and leads exist
+  if (isVercel && !fs.existsSync(dbPath)) {
+    if (fs.existsSync(localDbPath)) {
+      try {
+        fs.copyFileSync(localDbPath, dbPath);
+      } catch (err) {
+        console.warn('Could not copy bundled db to /tmp, will initialize fresh:', err);
+      }
+    }
+  }
 }
 
 let dbInstance: DatabaseSync | null = null;
 
 export function getDb(): DatabaseSync {
   if (!dbInstance) {
+    ensureDbFile();
     dbInstance = new DatabaseSync(dbPath);
     initTables(dbInstance);
   }
@@ -21,8 +40,10 @@ export function getDb(): DatabaseSync {
 }
 
 function initTables(db: DatabaseSync) {
+  const journalMode = isVercel ? 'DELETE' : 'WAL';
   db.exec(`
-    PRAGMA journal_mode = WAL;
+    PRAGMA journal_mode = ${journalMode};
+    PRAGMA busy_timeout = 5000;
     PRAGMA foreign_keys = ON;
 
     CREATE TABLE IF NOT EXISTS users (
