@@ -1,0 +1,99 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  phone        String?     @unique
+  role         String      @default("FIELD_AGENT") // ADMIN, MANAGER, CALLER, FIELD_AGENT
+  pin          String      @default("1234") // Quick 4-digit PIN for simple phone/tablet sign-in
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  capturedLeads Lead[]     @relation("CapturedLeads")
+  claimedLeads  Lead[]     @relation("ClaimedLeads")
+  callLogs      CallLog[]
+  followUps     FollowUp[]
+  activities    Activity[]
+}
+
+model Lead {
+  id                   String      @id @default(uuid())
+  projectName          String
+  contactName          String
+  contactPhone         String      @index
+  contactRole          String      @default("CONTRACTOR") // OWNER, CONTRACTOR, BUILDER, ARCHITECT, SITE_ENGINEER
+  siteAddress          String
+  latitude             Float?
+  longitude            Float?
+  mapsUrl              String?
+  constructionStage    String      @default("FOUNDATION") // EXCAVATION, FOUNDATION, BRICKWORK, PLASTERING, FINISHING, INTERIOR, OTHER
+  materialRequirements String?
+  estimatedBudget      String?
+  notes                String?
+  photoUrl             String?
+  
+  status               String      @default("UNCLAIMED") // UNCLAIMED, CLAIMED, CONTACTED, INTERESTED, QUOTE_SENT, WON, LOST, INVALID
+  lostReason           String?
+
+  capturedById         String
+  capturedBy           User        @relation("CapturedLeads", fields: [capturedById], references: [id])
+
+  claimedById          String?
+  claimedBy            User?       @relation("ClaimedLeads", fields: [claimedById], references: [id])
+  claimedAt            DateTime?
+
+  lastContactedAt      DateTime?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  callLogs             CallLog[]
+  followUps            FollowUp[]
+  activities           Activity[]
+}
+
+model CallLog {
+  id              String      @id @default(uuid())
+  leadId          String
+  lead            Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  callerId        String
+  caller          User        @relation(fields: [callerId], references: [id])
+  callStatus      String      // INTERESTED, CALLBACK_REQUESTED, QUOTE_SENT, WON, NOT_INTERESTED, UNREACHABLE, INVALID_NUMBER
+  notes           String?
+  durationSeconds Int         @default(0)
+  createdAt       DateTime    @default(now())
+}
+
+model FollowUp {
+  id           String      @id @default(uuid())
+  leadId       String
+  lead         Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  callerId     String
+  caller       User        @relation(fields: [callerId], references: [id])
+  scheduledAt  DateTime
+  reason       String?
+  status       String      @default("PENDING") // PENDING, COMPLETED, MISSED
+  completedAt  DateTime?
+  createdAt    DateTime    @default(now())
+}
+
+model Activity {
+  id          String      @id @default(uuid())
+  leadId      String
+  lead        Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  action      String      // LEAD_CREATED, LEAD_CLAIMED, CALL_LOGGED, STATUS_CHANGED, FOLLOWUP_SCHEDULED, LEAD_REASSIGNED
+  description String
+  metadata    String?     // JSON string if needed
+  createdAt   DateTime    @default(now())
+}
+
