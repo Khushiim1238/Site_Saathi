@@ -55,13 +55,19 @@ export default function HomePage() {
           </span>
         </div>
 
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            Site Lead Tracker
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-            Eliminating WhatsApp bottlenecks. Real-time site visits, telecalling, and conversion oversight.
-          </p>
+        <div className="flex items-start gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-white p-1 shadow-md flex items-center justify-center flex-shrink-0">
+            <img src="/logo.png" alt="Veer Cover Block" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">VEER COVER BLOCK</div>
+            <h1 className="text-xl font-bold tracking-tight text-white leading-snug">
+              Site Leads & Orders
+            </h1>
+            <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+              Precision. Strength. Coverage. Real-time site visits, telecalling desk & conversion oversight.
+            </p>
+          </div>
         </div>
 
         {/* 3 Metric Pills */}

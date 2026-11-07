@@ -13,12 +13,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'BuildTrack CRM — Construction Site Lead Capture & Conversion',
-  description: 'Eliminates WhatsApp bottlenecks, tracks on-site construction leads, powers telecalling, and delivers full manager visibility.',
+  title: 'Veer Cover Block — Site Leads & Sales CRM',
+  description: 'Eliminates WhatsApp bottlenecks, tracks on-site construction leads, powers telecalling, and delivers full manager visibility for Veer Cover Block.',
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SiteTrack',
+    title: 'Veer CRM',
   },
 };
 

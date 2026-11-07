@@ -75,13 +75,16 @@ export default function Navbar() {
       <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-xl border-b border-zinc-200/70 px-4 py-2.5">
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-zinc-900 text-white flex items-center justify-center font-semibold shadow-xs group-hover:bg-zinc-800 transition-colors">
-              <Building2 className="w-4 h-4 text-amber-400" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg bg-white border border-zinc-200/90 p-0.5 flex items-center justify-center shadow-xs overflow-hidden group-hover:border-zinc-300 transition-all flex-shrink-0">
+              <img src="/logo.png" alt="Veer Cover Block" className="w-full h-full object-contain" />
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="font-bold text-zinc-900 text-base tracking-tight">BuildTrack</span>
-              <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">PRO</span>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="font-extrabold text-zinc-900 text-sm tracking-tight">VEER</span>
+                <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 px-1 py-0.5 rounded leading-none uppercase tracking-wider">CRM</span>
+              </div>
+              <span className="text-[9px] font-semibold text-zinc-400 tracking-tight leading-none mt-0.5">COVER BLOCK</span>
             </div>
           </Link>
 
