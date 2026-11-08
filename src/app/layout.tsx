@@ -16,8 +16,12 @@ export const metadata: Metadata = {
   title: 'Veer Cover Block — Site Leads & Sales CRM',
   description: 'Eliminates WhatsApp bottlenecks, tracks on-site construction leads, powers telecalling, and delivers full manager visibility for Veer Cover Block.',
   icons: {
-    icon: '/icon.png',
-    apple: '/apple-icon.png',
+    icon: [
+      { url: '/favicon.ico?v=2' },
+      { url: '/icon.png?v=2', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico?v=2',
+    apple: '/apple-icon.png?v=2',
   },
   appleWebApp: {
     capable: true,
