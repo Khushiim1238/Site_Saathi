@@ -143,7 +143,7 @@ export default function CallingDeskPage() {
         <div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">Calling Desk</h1>
           <p className="text-xs text-zinc-500">
-            Caller: <span className="font-semibold text-zinc-800">{mounted && currentUser?.name ? currentUser.name.split(' ')[0] : 'Staff'}</span>
+            Caller: <span className="font-semibold text-zinc-800">{mounted && currentUser?.name ? currentUser.name : 'Staff'}</span>
           </p>
         </div>
         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-100 rounded-full text-zinc-600 text-[11px] font-medium border border-zinc-200/70">
@@ -247,8 +247,8 @@ export default function CallingDeskPage() {
                 </div>
 
                 <div className="flex items-center justify-between pt-1 gap-2">
-                  <span className="text-[11px] text-zinc-400 truncate">
-                    Logged by {lead.captured_by_name?.split(' ')[0] || 'Agent'}
+                  <span className="text-[11px] text-zinc-500 font-medium truncate">
+                    Logged by <strong className="text-zinc-800">{lead.captured_by_name || 'Field Agent'}</strong>
                   </span>
                   <button
                     onClick={() => handleClaim(lead.id)}

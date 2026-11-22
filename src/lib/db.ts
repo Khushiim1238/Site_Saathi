@@ -78,6 +78,17 @@ function initTables(db: DatabaseSync) {
       claimed_by_id TEXT,
       claimed_at TEXT,
       last_contacted_at TEXT,
+      ihb_name TEXT,
+      ihb_phone TEXT,
+      contractor_name TEXT,
+      contractor_phone TEXT,
+      engineer_name TEXT,
+      engineer_phone TEXT,
+      site_area TEXT,
+      cement_brand TEXT,
+      cement_rate TEXT,
+      tmt_brand TEXT,
+      cover_block_sizes TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (captured_by_id) REFERENCES users(id),
@@ -124,6 +135,27 @@ function initTables(db: DatabaseSync) {
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
   `);
+
+  const extraCols = [
+    'ihb_name TEXT',
+    'ihb_phone TEXT',
+    'contractor_name TEXT',
+    'contractor_phone TEXT',
+    'engineer_name TEXT',
+    'engineer_phone TEXT',
+    'site_area TEXT',
+    'cement_brand TEXT',
+    'cement_rate TEXT',
+    'tmt_brand TEXT',
+    'cover_block_sizes TEXT',
+  ];
+  for (const col of extraCols) {
+    try {
+      db.exec(`ALTER TABLE leads ADD COLUMN ${col};`);
+    } catch {
+      // Column already exists
+    }
+  }
 
   seedInitialData(db);
 }

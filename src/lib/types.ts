@@ -61,6 +61,17 @@ export interface Lead {
   claimed_by_name?: string;
   claimed_at: string | null;
   last_contacted_at: string | null;
+  ihb_name?: string | null;
+  ihb_phone?: string | null;
+  contractor_name?: string | null;
+  contractor_phone?: string | null;
+  engineer_name?: string | null;
+  engineer_phone?: string | null;
+  site_area?: string | null;
+  cement_brand?: string | null;
+  cement_rate?: string | null;
+  tmt_brand?: string | null;
+  cover_block_sizes?: string | null;
   created_at: string;
   updated_at: string;
 }

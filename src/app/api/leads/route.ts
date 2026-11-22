@@ -73,19 +73,53 @@ export async function POST(request: NextRequest) {
       notes,
       photo_url,
       captured_by_id,
+      // Vardhman Site Visit Slip Fields
+      ihb_name,
+      ihb_phone,
+      contractor_name,
+      contractor_phone,
+      engineer_name,
+      engineer_phone,
+      site_area,
+      cement_brand,
+      cement_rate,
+      tmt_brand,
+      cover_block_sizes,
     } = body;
 
-    if (!project_name || !contact_name || !contact_phone || !site_address || !captured_by_id) {
+    // Resolve primary contact name and phone from IHB / Contractor / Direct fields
+    const resolvedContactName =
+      contact_name?.trim() ||
+      ihb_name?.trim() ||
+      contractor_name?.trim() ||
+      engineer_name?.trim() ||
+      'Site Contact';
+
+    const rawPhone =
+      contact_phone ||
+      ihb_phone ||
+      contractor_phone ||
+      engineer_phone ||
+      '';
+
+    const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+
+    const resolvedProjectName =
+      project_name?.trim() ||
+      (ihb_name?.trim() ? `${ihb_name.trim()} Site` : null) ||
+      (contractor_name?.trim() ? `${contractor_name.trim()} Site` : null) ||
+      (site_address?.trim() ? `${site_address.trim().split(',')[0]} Site` : 'Site Visit');
+
+    if (!site_address?.trim() || !captured_by_id) {
       return NextResponse.json(
-        { success: false, error: 'Project name, contact name, phone, site address, and agent ID are required' },
+        { success: false, error: 'Site address/location and Agent ID are required.' },
         { status: 400 }
       );
     }
 
-    const cleanPhone = contact_phone.replace(/\D/g, '').slice(-10);
-    if (cleanPhone.length !== 10) {
+    if (!cleanPhone || cleanPhone.length !== 10) {
       return NextResponse.json(
-        { success: false, error: 'Please enter a valid 10-digit mobile number' },
+        { success: false, error: 'Please enter at least one valid 10-digit mobile number (IHB, Contractor, or Engineer).' },
         { status: 400 }
       );
     }
@@ -116,17 +150,23 @@ export async function POST(request: NextRequest) {
         id, project_name, contact_name, contact_phone, contact_role,
         site_address, latitude, longitude, maps_url, construction_stage,
         material_requirements, estimated_budget, notes, photo_url,
+        ihb_name, ihb_phone, contractor_name, contractor_phone,
+        engineer_name, engineer_phone, site_area, cement_brand,
+        cement_rate, tmt_brand, cover_block_sizes,
         status, captured_by_id, created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?,
         'UNCLAIMED', ?, ?, ?
       )
     `).run(
       leadId,
-      project_name.trim(),
-      contact_name.trim(),
+      resolvedProjectName,
+      resolvedContactName,
       cleanPhone,
       contact_role,
       site_address.trim(),
@@ -138,6 +178,17 @@ export async function POST(request: NextRequest) {
       estimated_budget ? estimated_budget.trim() : null,
       notes ? notes.trim() : null,
       photo_url || null,
+      ihb_name ? ihb_name.trim() : null,
+      ihb_phone ? ihb_phone.replace(/\D/g, '').slice(-10) : null,
+      contractor_name ? contractor_name.trim() : null,
+      contractor_phone ? contractor_phone.replace(/\D/g, '').slice(-10) : null,
+      engineer_name ? engineer_name.trim() : null,
+      engineer_phone ? engineer_phone.replace(/\D/g, '').slice(-10) : null,
+      site_area ? site_area.trim() : null,
+      cement_brand ? cement_brand.trim() : null,
+      cement_rate ? cement_rate.trim() : null,
+      tmt_brand ? tmt_brand.trim() : null,
+      cover_block_sizes ? cover_block_sizes.trim() : null,
       captured_by_id,
       now,
       now
