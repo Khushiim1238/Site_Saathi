@@ -63,7 +63,7 @@ export default function FieldAgentPage() {
   const [mounted, setMounted] = useState(false);
 
   // Form Fields mapped to Vardhman Site Visit Slip
-  const [visitDate, setVisitDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [visitDate, setVisitDate] = useState('');
   const [siteAddress, setSiteAddress] = useState('');
   
   // Stakeholders
