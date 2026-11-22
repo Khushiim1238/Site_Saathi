@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@/context/UserContext';
-import { 
-  MapPin, 
-  Phone, 
-  User, 
-  Building2, 
-  Check, 
-  AlertCircle, 
-  Loader2, 
+import {
+  MapPin,
+  Phone,
+  User,
+  Building2,
+  Check,
+  AlertCircle,
+  Loader2,
   ExternalLink,
   Plus,
   ArrowRight,
@@ -65,7 +65,7 @@ export default function FieldAgentPage() {
   // Form Fields mapped to Vardhman Site Visit Slip
   const [visitDate, setVisitDate] = useState('');
   const [siteAddress, setSiteAddress] = useState('');
-  
+
   // Stakeholders
   const [ihbName, setIhbName] = useState('');
   const [ihbPhone, setIhbPhone] = useState('');
@@ -112,6 +112,7 @@ export default function FieldAgentPage() {
 
   useEffect(() => {
     setMounted(true);
+    setVisitDate(new Date().toISOString().split('T')[0]);
   }, []);
 
   // Restore unsaved draft on load
@@ -446,7 +447,7 @@ export default function FieldAgentPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        
+
         {/* CARD 1: SITE LOCATION & DATE */}
         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
@@ -638,11 +639,10 @@ export default function FieldAgentPage() {
                   type="button"
                   key={stg}
                   onClick={() => setConstructionStage(stg)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    constructionStage === stg
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${constructionStage === stg
                       ? 'bg-slate-900 text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                    }`}
                 >
                   {stg}
                 </button>
@@ -690,11 +690,10 @@ export default function FieldAgentPage() {
                   type="button"
                   key={brand}
                   onClick={() => setCementBrand(brand)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    cementBrand === brand
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${cementBrand === brand
                       ? 'bg-blue-600 text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                    }`}
                 >
                   {brand}
                 </button>
@@ -739,11 +738,10 @@ export default function FieldAgentPage() {
                   type="button"
                   key={tmt}
                   onClick={() => setTmtBrand(tmt)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    tmtBrand === tmt
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${tmtBrand === tmt
                       ? 'bg-slate-900 text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
+                    }`}
                 >
                   {tmt}
                 </button>
@@ -783,16 +781,14 @@ export default function FieldAgentPage() {
                     type="button"
                     key={size.id}
                     onClick={() => toggleCoverBlock(size.id)}
-                    className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
-                      isSelected
+                    className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${isSelected
                         ? 'bg-blue-50 border-blue-300 text-blue-900 shadow-2xs'
                         : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
+                      }`}
                   >
                     <span>{size.label}</span>
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${
-                      isSelected ? 'bg-blue-600 text-white' : 'border border-slate-300'
-                    }`}>
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${isSelected ? 'bg-blue-600 text-white' : 'border border-slate-300'
+                      }`}>
                       {isSelected ? '✓' : ''}
                     </span>
                   </button>
@@ -821,11 +817,10 @@ export default function FieldAgentPage() {
           <button
             type="submit"
             disabled={submitting || !!duplicateLead}
-            className={`w-full py-3.5 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer ${
-              duplicateLead
+            className={`w-full py-3.5 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer ${duplicateLead
                 ? 'bg-slate-300 cursor-not-allowed text-slate-500 shadow-none'
                 : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/25'
-            }`}
+              }`}
           >
             {submitting ? (
               <>
