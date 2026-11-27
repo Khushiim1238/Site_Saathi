@@ -5,14 +5,14 @@ import { useUser } from '@/context/UserContext';
 import { Lock, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function PinLockModal() {
-  const { users, currentUser, isAuthenticated, loginWithPin } = useUser();
+  const { users, currentUser, isAuthenticated, authChecked, loginWithPin } = useUser();
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUser?.id || '');
   const [pinInput, setPinInput] = useState<string>('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
 
-  // If already authenticated, do not show modal
-  if (isAuthenticated) {
+  // Wait until auth is verified from localStorage, or if already authenticated don't show
+  if (!authChecked || isAuthenticated) {
     return null;
   }
 

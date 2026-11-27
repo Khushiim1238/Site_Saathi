@@ -58,6 +58,21 @@ const COVER_BLOCK_SIZES = [
 
 const DRAFT_STORAGE_KEY = 'vardhman_site_visit_draft_v3';
 
+interface SubmittedSiteInfo {
+  id: string;
+  projectName: string;
+  siteAddress: string;
+  contactName: string;
+  contactPhone: string;
+  constructionStage: string;
+  siteArea: string;
+  cementBrand: string;
+  cementRate: string;
+  tmtBrand: string;
+  coverBlocks: string;
+  timestamp: string;
+}
+
 export default function FieldAgentPage() {
   const { currentUser } = useUser();
   const [mounted, setMounted] = useState(false);
@@ -101,19 +116,35 @@ export default function FieldAgentPage() {
   const [checkingPhone, setCheckingPhone] = useState(false);
   const [duplicateLead, setDuplicateLead] = useState<any | null>(null);
 
-  // Submission state
+  // Submission state & confirmation
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
+  const [lastSubmittedSite, setLastSubmittedSite] = useState<SubmittedSiteInfo | null>(null);
+  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Past submissions history drawer
   const [showHistory, setShowHistory] = useState(false);
   const [myLeads, setMyLeads] = useState<any[]>([]);
 
+  const fetchRecentSubmissions = async () => {
+    try {
+      const url = currentUser?.id ? `/api/leads?captured_by_id=${currentUser.id}` : '/api/leads';
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.leads)) {
+        setRecentSubmissions(data.leads.slice(0, 5));
+      }
+    } catch (e) {
+      // silent
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     setVisitDate(new Date().toISOString().split('T')[0]);
-  }, []);
+    fetchRecentSubmissions();
+  }, [currentUser?.id]);
 
   // Restore unsaved draft on load
   useEffect(() => {
@@ -287,13 +318,11 @@ export default function FieldAgentPage() {
     e.preventDefault();
     setFormError(null);
 
-    if (!currentUser) {
-      setFormError('Please unlock your profile with your PIN.');
-      return;
-    }
+    const agentId = currentUser?.id || 'user_agent_1';
 
     if (!siteAddress.trim()) {
       setFormError('Please enter the Site Address / Location.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -304,11 +333,13 @@ export default function FieldAgentPage() {
     const effectivePhone = cleanIhbPhone || cleanContractorPhone || cleanEngineerPhone;
     if (!effectivePhone || effectivePhone.length !== 10) {
       setFormError('Please enter at least one valid 10-digit mobile number (IHB, Contractor, or Engineer).');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
     if (duplicateLead) {
       setFormError('A site with this mobile number has already been recorded.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -338,18 +369,52 @@ export default function FieldAgentPage() {
           notes: notes.trim(),
           latitude,
           longitude,
-          captured_by_id: currentUser.id,
+          captured_by_id: agentId,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok && data?.success) {
+        const resolvedContactName = ihbName.trim() || contractorName.trim() || engineerName.trim() || 'Site Contact';
+        const resolvedProject = ihbName.trim() ? `${ihbName.trim()} Site` : siteAddress.trim().split(',')[0] + ' Site';
+
+        const submittedInfo: SubmittedSiteInfo = {
+          id: data.leadId,
+          projectName: resolvedProject,
+          siteAddress: siteAddress.trim(),
+          contactName: resolvedContactName,
+          contactPhone: effectivePhone,
+          constructionStage,
+          siteArea: siteArea.trim(),
+          cementBrand: finalCementBrand,
+          cementRate: cementRate.trim(),
+          tmtBrand: finalTmtBrand,
+          coverBlocks: selectedCoverBlocks.join(', '),
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+
+        setLastSubmittedSite(submittedInfo);
         localStorage.removeItem(DRAFT_STORAGE_KEY);
         setDraftRestored(false);
         setSuccessMessage(true);
+        setFormError(null);
 
-        // Reset form
+        // Prepend immediately to recent submissions list
+        setRecentSubmissions((prev) => [
+          {
+            id: data.leadId,
+            project_name: submittedInfo.projectName,
+            site_address: submittedInfo.siteAddress,
+            contact_name: submittedInfo.contactName,
+            contact_phone: submittedInfo.contactPhone,
+            status: 'UNCLAIMED',
+            created_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+
+        // Reset form fields
         setSiteAddress('');
         setIhbName('');
         setIhbPhone('');
@@ -364,10 +429,13 @@ export default function FieldAgentPage() {
         setLongitude(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setFormError(data?.error || 'Failed to submit site visit. Please try again.');
+        const errMsg = data?.error || 'Failed to submit site visit. Please try again.';
+        setFormError(errMsg);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err: any) {
       setFormError(err?.message || 'Network error. Please check your internet connection.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSubmitting(false);
     }
@@ -417,30 +485,81 @@ export default function FieldAgentPage() {
         </div>
       )}
 
-      {/* Success Notification */}
-      {successMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start justify-between gap-3 animate-in fade-in duration-150">
-          <div className="flex items-start gap-2.5">
-            <Check className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
-            <div>
-              <h4 className="text-sm font-bold text-emerald-950">Site Visit Successfully Logged!</h4>
-              <p className="text-xs text-emerald-800 mt-0.5 leading-relaxed font-medium">
-                The lead is now live in the Central Pool for the telecalling desk to follow up.
-              </p>
+      {/* Prominent Site Saved Confirmation Card */}
+      {lastSubmittedSite && (
+        <div className="bg-emerald-50 border-2 border-emerald-500/40 rounded-3xl p-5 shadow-sm space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between border-b border-emerald-200/80 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </div>
+              <div>
+                <h3 className="font-black text-emerald-950 text-sm">Site Visit Successfully Saved!</h3>
+                <p className="text-[11px] text-emerald-800 font-medium">
+                  Logged at {lastSubmittedSite.timestamp} • Lead ID: <span className="font-mono font-bold">{lastSubmittedSite.id}</span>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setLastSubmittedSite(null)}
+              className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-1 cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Site Location</span>
+              <span className="font-bold text-slate-900 truncate block">{lastSubmittedSite.siteAddress}</span>
+            </div>
+            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Contact &amp; Mobile</span>
+              <span className="font-bold text-slate-900 truncate block">
+                {lastSubmittedSite.contactName} (+91 {lastSubmittedSite.contactPhone})
+              </span>
+            </div>
+            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Stage &amp; Area</span>
+              <span className="font-bold text-slate-900 truncate block">
+                {lastSubmittedSite.constructionStage} {lastSubmittedSite.siteArea ? `• ${lastSubmittedSite.siteArea} sq.ft` : ''}
+              </span>
+            </div>
+            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Brands &amp; Rate</span>
+              <span className="font-bold text-slate-900 truncate block">
+                {lastSubmittedSite.cementBrand} {lastSubmittedSite.cementRate ? `(₹${lastSubmittedSite.cementRate})` : ''} • {lastSubmittedSite.tmtBrand}
+              </span>
             </div>
           </div>
-          <button
-            onClick={() => setSuccessMessage(false)}
-            className="text-emerald-700 font-bold text-xs p-1 cursor-pointer"
-          >
-            ✕
-          </button>
+
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setLastSubmittedSite(null);
+                window.scrollTo({ top: 300, behavior: 'smooth' });
+              }}
+              className="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Log Another Site Visit</span>
+            </button>
+            <a
+              href="/leads"
+              className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1 cursor-pointer transition-all"
+            >
+              <span>View Directory</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       )}
 
       {/* Form Error Banner */}
       {formError && (
-        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-2.5 text-rose-900 text-xs font-bold">
+        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-2.5 text-rose-900 text-xs font-bold animate-in fade-in duration-100">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{formError}</span>
         </div>
@@ -812,6 +931,14 @@ export default function FieldAgentPage() {
           </div>
         </div>
 
+        {/* Inline Error Banner above submit button */}
+        {formError && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-rose-800 text-xs font-bold animate-in fade-in duration-100">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{formError}</span>
+          </div>
+        )}
+
         {/* SUBMIT BUTTON */}
         <div className="pt-2">
           <button
@@ -837,6 +964,50 @@ export default function FieldAgentPage() {
         </div>
       </form>
 
+      {/* Live Recent Submissions Feed */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div className="flex items-center gap-2">
+            <History className="w-4 h-4 text-blue-600" />
+            <h3 className="font-bold text-slate-900 text-sm">Recent Site Visits Logged</h3>
+          </div>
+          <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+            {recentSubmissions.length} Sites
+          </span>
+        </div>
+
+        {recentSubmissions.length === 0 ? (
+          <p className="text-slate-400 text-xs italic text-center py-4">
+            No visits logged yet today. Fill in the slip above and tap Submit.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {recentSubmissions.map((lead) => (
+              <div
+                key={lead.id}
+                className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/80 text-xs space-y-1 transition-all"
+              >
+                <div className="flex items-center justify-between font-bold text-slate-900">
+                  <span className="truncate max-w-[200px]">{lead.contact_name || lead.project_name}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    {lead.status === 'UNCLAIMED' ? 'Calling Pool' : lead.status}
+                  </span>
+                </div>
+                <p className="text-slate-500 text-[11px] truncate">{lead.site_address}</p>
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5 font-mono">
+                  <span>+91 {lead.contact_phone}</span>
+                  <span>
+                    {lead.created_at
+                      ? new Date(lead.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : ''}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* History Drawer */}
       {showHistory && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
@@ -847,6 +1018,7 @@ export default function FieldAgentPage() {
                 <p className="text-xs text-slate-500">Your recent submissions ({myLeads.length})</p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowHistory(false)}
                 className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center cursor-pointer"
               >
