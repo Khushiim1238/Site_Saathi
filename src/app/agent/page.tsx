@@ -127,16 +127,40 @@ export default function FieldAgentPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [myLeads, setMyLeads] = useState<any[]>([]);
 
+  const LOCAL_SAVED_SITES_KEY = 'veer_local_logged_sites_v2';
+
   const fetchRecentSubmissions = async () => {
+    let localList: any[] = [];
+    try {
+      const stored = localStorage.getItem(LOCAL_SAVED_SITES_KEY);
+      if (stored) {
+        localList = JSON.parse(stored);
+      }
+    } catch {
+      // silent
+    }
+
     try {
       const url = currentUser?.id ? `/api/leads?captured_by_id=${currentUser.id}` : '/api/leads';
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && Array.isArray(data.leads)) {
-        setRecentSubmissions(data.leads.slice(0, 5));
+        // Merge server leads with local storage leads to guarantee zero data loss on Vercel
+        const combined = [...data.leads];
+        for (const loc of localList) {
+          if (!combined.some((c) => c.id === loc.id || (c.contact_phone && c.contact_phone === loc.contact_phone))) {
+            combined.unshift(loc);
+          }
+        }
+        setRecentSubmissions(combined.slice(0, 8));
+        return;
       }
     } catch (e) {
       // silent
+    }
+
+    if (localList.length > 0) {
+      setRecentSubmissions(localList.slice(0, 8));
     }
   };
 
@@ -400,19 +424,28 @@ export default function FieldAgentPage() {
         setSuccessMessage(true);
         setFormError(null);
 
+        const newEntry = {
+          id: data.leadId,
+          project_name: submittedInfo.projectName,
+          site_address: submittedInfo.siteAddress,
+          contact_name: submittedInfo.contactName,
+          contact_phone: submittedInfo.contactPhone,
+          status: 'UNCLAIMED',
+          created_at: new Date().toISOString(),
+        };
+
+        // Persist on device localStorage so it NEVER disappears even if serverless restarts
+        try {
+          const stored = localStorage.getItem(LOCAL_SAVED_SITES_KEY);
+          const list = stored ? JSON.parse(stored) : [];
+          const updated = [newEntry, ...list.filter((x: any) => x.id !== data.leadId)].slice(0, 30);
+          localStorage.setItem(LOCAL_SAVED_SITES_KEY, JSON.stringify(updated));
+        } catch {
+          // silent
+        }
+
         // Prepend immediately to recent submissions list
-        setRecentSubmissions((prev) => [
-          {
-            id: data.leadId,
-            project_name: submittedInfo.projectName,
-            site_address: submittedInfo.siteAddress,
-            contact_name: submittedInfo.contactName,
-            contact_phone: submittedInfo.contactPhone,
-            status: 'UNCLAIMED',
-            created_at: new Date().toISOString(),
-          },
-          ...prev,
-        ]);
+        setRecentSubmissions((prev) => [newEntry, ...prev]);
 
         // Reset form fields
         setSiteAddress('');

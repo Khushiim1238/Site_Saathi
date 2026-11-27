@@ -33,6 +33,14 @@ export default function MasterLeadsPage() {
 
   const fetchLeads = async () => {
     setLoading(true);
+    let localList: any[] = [];
+    try {
+      const stored = localStorage.getItem('veer_local_logged_sites_v2');
+      if (stored) localList = JSON.parse(stored);
+    } catch {
+      // silent
+    }
+
     try {
       let url = '/api/leads?';
       if (statusFilter) url += `status=${statusFilter}&`;
@@ -41,10 +49,22 @@ export default function MasterLeadsPage() {
       const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
-        setLeads(data.leads);
+        const serverLeads = Array.isArray(data.leads) ? data.leads : [];
+        const merged = [...serverLeads];
+        for (const loc of localList) {
+          if (!merged.some((m) => m.id === loc.id || (m.contact_phone && m.contact_phone === loc.contact_phone))) {
+            merged.unshift(loc);
+          }
+        }
+        setLeads(merged);
+      } else if (localList.length > 0) {
+        setLeads(localList);
       }
     } catch (e) {
       console.error(e);
+      if (localList.length > 0) {
+        setLeads(localList);
+      }
     } finally {
       setLoading(false);
     }
