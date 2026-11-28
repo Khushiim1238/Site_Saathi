@@ -5,17 +5,9 @@ import { useUser } from '@/context/UserContext';
 import { 
   PhoneCall, 
   Phone, 
-  User, 
-  Building2, 
-  Clock, 
   Check, 
-  RotateCcw, 
   MapPin, 
   Loader2, 
-  Calendar,
-  Sparkles,
-  Inbox,
-  ArrowUpRight,
   ChevronRight
 } from 'lucide-react';
 import { Lead } from '@/lib/types';
@@ -46,9 +38,10 @@ export default function CallingDeskPage() {
     if (!isBackground) setInitialLoading(true);
 
     try {
+      const callerId = 'user_caller_1';
       const poolPromise = fetch('/api/leads?status=UNCLAIMED').then((r) => r.json());
       const myLeadsPromise = fetch(`/api/leads?claimed_by_name=${encodeURIComponent(staffName || 'Staff')}`).then((r) => r.json());
-      const fuPromise = fetch('/api/followups?status=PENDING').then((r) => r.json());
+      const fuPromise = fetch(`/api/followups?status=PENDING`).then((r) => r.json());
 
       const [poolData, myData, fuData] = await Promise.all([poolPromise, myLeadsPromise, fuPromise]);
 
@@ -127,6 +120,8 @@ export default function CallingDeskPage() {
         setActiveLead(null);
         setCallNotes('');
         fetchAllData(true);
+      } else {
+        alert(data.error || 'Failed to record call');
       }
     } catch (e) {
       console.error(e);
@@ -136,87 +131,90 @@ export default function CallingDeskPage() {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto px-4 py-5 pb-32">
-      {/* Top Header */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full max-w-xl mx-auto px-4 py-6 pb-28 space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-zinc-900 tracking-tight">Calling Desk</h1>
-          <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-500">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Telecalling Desk</h1>
+          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500 font-medium">
             <span>Caller:</span>
             <button
               type="button"
               onClick={openStaffNamePrompt}
-              className="flex items-center gap-1.5 text-xs font-bold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-lg px-2.5 py-0.5 cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-0.5 cursor-pointer"
             >
               <span>{staffName || 'Staff'}</span>
-              <span className="text-zinc-400 text-[10px]">✎</span>
+              <span className="text-slate-400 text-[10px]">✎</span>
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-100 rounded-full text-zinc-600 text-[11px] font-medium border border-zinc-200/70">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-full text-slate-600 text-xs font-medium border border-slate-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>Live Sync</span>
         </div>
       </div>
 
-      {/* iOS-Style Segmented Control */}
-      <div className="grid grid-cols-3 gap-1 bg-zinc-100/90 p-1 rounded-2xl mb-4 text-xs font-medium w-full">
+      {/* Segmented Control */}
+      <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-medium w-full">
         <button
+          type="button"
           onClick={() => setActiveTab('POOL')}
-          className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-            activeTab === 'POOL' ? 'bg-white text-zinc-900 font-semibold shadow-xs' : 'text-zinc-500 hover:text-zinc-900'
+          className={`py-2 px-1 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'POOL' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <span>Available</span>
           {poolLeads.length > 0 && (
-            <span className="min-w-4 h-4 px-1 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="min-w-4 h-4 px-1 rounded-full bg-slate-200 text-slate-800 text-[10px] font-mono font-bold flex items-center justify-center">
               {poolLeads.length}
             </span>
           )}
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('MY_CALLS')}
-          className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-            activeTab === 'MY_CALLS' ? 'bg-white text-zinc-900 font-semibold shadow-xs' : 'text-zinc-500 hover:text-zinc-900'
+          className={`py-2 px-1 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'MY_CALLS' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <span>My Leads</span>
           {myLeads.length > 0 && (
-            <span className="min-w-4 h-4 px-1 rounded-full bg-zinc-900 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="min-w-4 h-4 px-1 rounded-full bg-slate-800 text-white text-[10px] font-mono font-bold flex items-center justify-center">
               {myLeads.length}
             </span>
           )}
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('REMINDERS')}
-          className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-            activeTab === 'REMINDERS' ? 'bg-white text-zinc-900 font-semibold shadow-xs' : 'text-zinc-500 hover:text-zinc-900'
+          className={`py-2 px-1 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            activeTab === 'REMINDERS' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <span>Callbacks</span>
           {followUps.length > 0 && (
-            <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[10px] font-mono font-bold flex items-center justify-center">
               {followUps.length}
             </span>
           )}
         </button>
       </div>
 
-      {/* TAB 1: POOL LEADS */}
+      {/* TAB 1: AVAILABLE POOL */}
       {activeTab === 'POOL' && (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {initialLoading ? (
-            <div className="p-12 text-center text-xs text-zinc-400">
-              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-zinc-400" />
+            <div className="p-12 text-center text-xs text-slate-400">
+              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
               Loading pool leads...
             </div>
           ) : poolLeads.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-zinc-200/80 text-center shadow-xs">
-              <Check className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-              <h3 className="font-semibold text-zinc-900 text-sm">No Unclaimed Leads</h3>
-              <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">
+            <div className="bg-white rounded-xl p-8 border border-slate-200/90 text-center shadow-2xs">
+              <Check className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+              <h3 className="font-bold text-slate-900 text-sm">No Unclaimed Leads</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
                 All leads have been claimed. As field agents add new sites, they appear here live.
               </p>
             </div>
@@ -224,45 +222,46 @@ export default function CallingDeskPage() {
             poolLeads.map((lead) => (
               <div
                 key={lead.id}
-                className="bg-white rounded-2xl p-4 border border-zinc-200/80 shadow-xs space-y-3 transition-all hover:border-zinc-300"
+                className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-zinc-900 text-base leading-tight">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-slate-900 text-sm leading-snug truncate">
                       {lead.project_name}
                     </h3>
-                    <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-zinc-400 flex-shrink-0" />
+                    <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1 font-medium">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{lead.site_address}</span>
                     </p>
                   </div>
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 uppercase flex-shrink-0">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 shrink-0">
                     {lead.construction_stage}
                   </span>
                 </div>
 
-                <div className="bg-zinc-50/80 p-3 rounded-xl text-xs space-y-1 border border-zinc-100">
+                <div className="bg-slate-50/80 p-3 rounded-lg text-xs space-y-1 border border-slate-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">Contact:</span>
-                    <span className="font-semibold text-zinc-900">{lead.contact_name} ({lead.contact_role})</span>
+                    <span className="text-slate-500 text-[11px]">Contact:</span>
+                    <span className="font-semibold text-slate-800">{lead.contact_name} ({lead.contact_role})</span>
                   </div>
                   {lead.material_requirements && (
-                    <div className="text-[11px] text-zinc-700 pt-1">
-                      <span className="text-zinc-500">Needs:</span> {lead.material_requirements}
+                    <div className="text-[11px] text-slate-600 pt-1 border-t border-slate-200/60">
+                      <span className="text-slate-500">Needs:</span> {lead.material_requirements}
                     </div>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between pt-1 gap-2">
-                  <span className="text-[11px] text-zinc-500 font-medium truncate">
-                    Logged by <strong className="text-zinc-800">{lead.captured_by_name || 'Field Agent'}</strong>
+                  <span className="text-xs text-slate-500 font-medium truncate">
+                    Logged by <strong className="text-slate-800">{lead.captured_by_name || 'Field Staff'}</strong>
                   </span>
                   <button
+                    type="button"
                     onClick={() => handleClaim(lead.id)}
-                    className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 active:scale-98 text-white font-medium text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-all flex-shrink-0"
+                    className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg shadow-2xs flex items-center gap-1 transition-colors cursor-pointer shrink-0"
                   >
                     <span>Claim Lead</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                   </button>
                 </div>
               </div>
@@ -273,18 +272,18 @@ export default function CallingDeskPage() {
 
       {/* TAB 2: MY CLAIMED LEADS */}
       {activeTab === 'MY_CALLS' && (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {initialLoading ? (
-            <div className="p-12 text-center text-xs text-zinc-400">
-              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-zinc-400" />
+            <div className="p-12 text-center text-xs text-slate-400">
+              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
               Loading your leads...
             </div>
           ) : myLeads.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-zinc-200/80 text-center shadow-xs">
-              <Phone className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-              <h3 className="font-semibold text-zinc-900 text-sm">No Active Leads</h3>
-              <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">
-                Go to the <strong>Available</strong> tab to claim site leads and begin calling.
+            <div className="bg-white rounded-xl p-8 border border-slate-200/90 text-center shadow-2xs">
+              <Phone className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+              <h3 className="font-bold text-slate-900 text-sm">No Active Leads</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                Go to the Available tab to claim site leads and begin calling.
               </p>
             </div>
           ) : (
@@ -295,53 +294,54 @@ export default function CallingDeskPage() {
               return (
                 <div
                   key={lead.id}
-                  className="bg-white rounded-2xl p-4 border border-zinc-200/80 shadow-xs space-y-3 transition-all hover:border-zinc-300"
+                  className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-zinc-900 text-base">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-slate-900 text-sm leading-snug truncate">
                         {lead.project_name}
                       </h3>
-                      <p className="text-xs text-zinc-500 mt-0.5 truncate">{lead.site_address}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">{lead.site_address}</p>
                     </div>
                     <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase flex-shrink-0 ${
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-md shrink-0 ${
                         isWon
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : isLost
-                          ? 'bg-zinc-100 text-zinc-500'
-                          : 'bg-amber-50 text-amber-800 border border-amber-200/80'
+                          ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
                       }`}
                     >
                       {lead.status}
                     </span>
                   </div>
 
-                  <div className="text-xs text-zinc-700 bg-zinc-50/80 p-2.5 rounded-xl flex items-center justify-between flex-wrap gap-1 border border-zinc-100">
-                    <span className="font-medium">{lead.contact_name} ({lead.contact_role})</span>
-                    <span className="font-mono font-semibold text-zinc-900">+91 {lead.contact_phone}</span>
+                  <div className="text-xs bg-slate-50/80 p-2.5 rounded-lg flex items-center justify-between flex-wrap gap-1 border border-slate-100">
+                    <span className="font-semibold text-slate-800">{lead.contact_name} ({lead.contact_role})</span>
+                    <span className="font-mono font-bold text-slate-900">+91 {lead.contact_phone}</span>
                   </div>
 
                   {lead.material_requirements && (
-                    <div className="text-[11px] text-zinc-600 bg-zinc-50 p-2 rounded-lg">
-                      <span className="text-zinc-400">Needs:</span> {lead.material_requirements}
+                    <div className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                      <span className="text-slate-400">Needs:</span> {lead.material_requirements}
                     </div>
                   )}
 
-                  {/* Call Actions */}
+                  {/* Actions */}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <a
                       href={`tel:${lead.contact_phone}`}
                       onClick={() => setActiveLead(lead)}
-                      className="py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-medium text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-all"
+                      className="py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Phone className="w-3.5 h-3.5" />
                       <span>Call Now</span>
                     </a>
 
                     <button
+                      type="button"
                       onClick={() => setActiveLead(lead)}
-                      className="py-2.5 bg-zinc-100 hover:bg-zinc-200 active:scale-98 text-zinc-800 font-medium text-xs rounded-xl transition-all"
+                      className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-lg border border-slate-200 transition-colors cursor-pointer"
                     >
                       <span>Record Outcome</span>
                     </button>
@@ -355,30 +355,30 @@ export default function CallingDeskPage() {
 
       {/* TAB 3: REMINDERS */}
       {activeTab === 'REMINDERS' && (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {followUps.length === 0 ? (
-            <div className="bg-white rounded-2xl p-8 border border-zinc-200/80 text-center shadow-xs">
-              <Check className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-              <h3 className="font-semibold text-zinc-900 text-sm">No Pending Callbacks</h3>
-              <p className="text-xs text-zinc-500 mt-1">All scheduled follow-up calls are completed.</p>
+            <div className="bg-white rounded-xl p-8 border border-slate-200/90 text-center shadow-2xs">
+              <Check className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+              <h3 className="font-bold text-slate-900 text-sm">No Pending Callbacks</h3>
+              <p className="text-xs text-slate-500 mt-1">All scheduled follow-up calls are completed.</p>
             </div>
           ) : (
             followUps.map((fu) => (
               <div
                 key={fu.id}
-                className="bg-white rounded-2xl p-4 border border-zinc-200/80 shadow-xs flex items-center justify-between gap-3"
+                className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3"
               >
-                <div className="flex-1">
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                <div className="flex-1 min-w-0">
+                  <span className="text-[11px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
                     Scheduled Callback
                   </span>
-                  <h4 className="font-semibold text-zinc-900 text-sm mt-1">{fu.lead_project_name}</h4>
-                  <p className="text-xs text-zinc-500 mt-0.5 truncate">{fu.lead_contact_name} (+91 {fu.lead_contact_phone})</p>
+                  <h4 className="font-bold text-slate-900 text-sm mt-1 truncate">{fu.lead_project_name}</h4>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">{fu.lead_contact_name} (+91 {fu.lead_contact_phone})</p>
                 </div>
 
                 <a
                   href={`tel:${fu.lead_contact_phone}`}
-                  className="px-3.5 py-2 bg-emerald-600 text-white font-medium text-xs rounded-xl shadow-xs flex items-center gap-1 flex-shrink-0"
+                  className="px-3.5 py-2 bg-slate-900 text-white font-semibold text-xs rounded-lg shadow-2xs flex items-center gap-1 shrink-0"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span>Call</span>
@@ -389,20 +389,19 @@ export default function CallingDeskPage() {
         </div>
       )}
 
-      {/* Modern Slide-Up Outcome Sheet */}
+      {/* Slide-Up Outcome Sheet */}
       {activeLead && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 shadow-2xl safe-area-bottom">
-            <div className="w-10 h-1 bg-zinc-200 rounded-full mx-auto mb-4 sm:hidden"></div>
-
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-100 mb-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-zinc-900 text-base">Record Call Outcome</h3>
-                <p className="text-xs text-zinc-500">{activeLead.project_name} ({activeLead.contact_name})</p>
+                <h3 className="font-bold text-slate-900 text-sm">Record Call Outcome</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{activeLead.project_name} ({activeLead.contact_name})</p>
               </div>
               <button
+                type="button"
                 onClick={() => setActiveLead(null)}
-                className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 flex items-center justify-center transition-colors"
+                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -411,38 +410,41 @@ export default function CallingDeskPage() {
             <div className="space-y-2">
               {/* Option 1 */}
               <button
+                type="button"
                 onClick={() => submitOutcome('INTERESTED', 'Customer interested. Quoted rates.')}
                 disabled={submittingOutcome}
-                className="w-full py-3 px-4 rounded-xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/80 text-left transition-all flex items-center justify-between"
+                className="w-full py-2.5 px-3.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors flex items-center justify-between cursor-pointer"
               >
                 <div>
-                  <div className="text-xs font-semibold text-zinc-900">Interested / In Negotiation</div>
-                  <div className="text-[11px] text-zinc-500">Discussion in progress; rates sent</div>
+                  <div className="text-xs font-bold text-slate-900">Interested / In Negotiation</div>
+                  <div className="text-[11px] text-slate-500">Discussion in progress; rates sent</div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-zinc-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
 
               {/* Option 2 */}
               <button
+                type="button"
                 onClick={() => submitOutcome('CALLBACK_REQUESTED', 'Customer requested callback tomorrow.')}
                 disabled={submittingOutcome}
-                className="w-full py-3 px-4 rounded-xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/80 text-left transition-all flex items-center justify-between"
+                className="w-full py-2.5 px-3.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors flex items-center justify-between cursor-pointer"
               >
                 <div>
-                  <div className="text-xs font-semibold text-zinc-900">Call Back Tomorrow</div>
-                  <div className="text-[11px] text-zinc-500">Adds reminder to your callback schedule</div>
+                  <div className="text-xs font-bold text-slate-900">Call Back Tomorrow</div>
+                  <div className="text-[11px] text-slate-500">Adds reminder to your callback schedule</div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-zinc-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
 
               {/* Option 3 */}
               <button
+                type="button"
                 onClick={() => submitOutcome('WON', 'Deal closed / Order booked!')}
                 disabled={submittingOutcome}
-                className="w-full py-3 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-left transition-all flex items-center justify-between"
+                className="w-full py-2.5 px-3.5 rounded-lg bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200 text-left transition-colors flex items-center justify-between cursor-pointer"
               >
                 <div>
-                  <div className="text-xs font-semibold text-emerald-900">Order Confirmed / Won</div>
+                  <div className="text-xs font-bold text-emerald-900">Order Confirmed / Won</div>
                   <div className="text-[11px] text-emerald-700">Customer placed material order</div>
                 </div>
                 <Check className="w-4 h-4 text-emerald-700" />
@@ -450,20 +452,21 @@ export default function CallingDeskPage() {
 
               {/* Option 4 */}
               <button
+                type="button"
                 onClick={() => submitOutcome('NOT_INTERESTED', 'Not interested / rate high.')}
                 disabled={submittingOutcome}
-                className="w-full py-3 px-4 rounded-xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/80 text-left transition-all flex items-center justify-between"
+                className="w-full py-2.5 px-3.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors flex items-center justify-between cursor-pointer"
               >
                 <div>
-                  <div className="text-xs font-semibold text-zinc-900">Lost / Not Interested</div>
-                  <div className="text-[11px] text-zinc-500">Competitor selected or construction paused</div>
+                  <div className="text-xs font-bold text-slate-900">Lost / Not Interested</div>
+                  <div className="text-[11px] text-slate-500">Competitor selected or construction paused</div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-zinc-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-zinc-100">
-              <label className="block text-xs font-medium text-zinc-700 mb-1">
+            <div className="pt-2 border-t border-slate-100">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Optional Call Notes
               </label>
               <input
@@ -471,7 +474,7 @@ export default function CallingDeskPage() {
                 placeholder="e.g. Quoted ₹54,000/ton for 20 tons TMT"
                 value={callNotes}
                 onChange={(e) => setCallNotes(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-base rounded-xl border border-zinc-200 bg-zinc-50/60 focus:bg-white focus:outline-none focus:border-zinc-900"
+                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50/80 focus:bg-white focus:outline-none focus:border-slate-800 font-medium"
               />
             </div>
           </div>

@@ -484,11 +484,11 @@ export default function FieldAgentPage() {
       <div className="flex items-center justify-between pb-1">
         <div>
           <div className="flex items-center gap-1.5 leading-none mb-1">
-            <span className="text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full border border-blue-200">
+            <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
               Vardhman Site Slip
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             Site Visit Entry
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -499,7 +499,7 @@ export default function FieldAgentPage() {
         <button
           type="button"
           onClick={loadMyHistory}
-          className="text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+          className="text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
         >
           <History className="w-3.5 h-3.5 text-slate-500" />
           <span>My History</span>
@@ -508,12 +508,12 @@ export default function FieldAgentPage() {
 
       {/* Draft Restored Banner */}
       {draftRestored && (
-        <div className="px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-2xl flex items-center justify-between text-xs text-slate-700 shadow-2xs">
+        <div className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs text-slate-700 shadow-2xs">
           <span>Restored unsaved visit details from this device</span>
           <button
             type="button"
             onClick={handleDiscardDraft}
-            className="text-[11px] font-bold text-slate-900 underline hover:text-black ml-2 cursor-pointer"
+            className="text-xs font-semibold text-slate-900 underline hover:text-black ml-2 cursor-pointer"
           >
             Clear Draft
           </button>
@@ -522,48 +522,48 @@ export default function FieldAgentPage() {
 
       {/* Prominent Site Saved Confirmation Card */}
       {lastSubmittedSite && (
-        <div className="bg-emerald-50 border-2 border-emerald-500/40 rounded-3xl p-5 shadow-sm space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
-          <div className="flex items-center justify-between border-b border-emerald-200/80 pb-3">
+        <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs">
-                <Check className="w-4 h-4 stroke-[3]" />
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold">
+                <Check className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <h3 className="font-black text-emerald-950 text-sm">Site Visit Successfully Saved!</h3>
-                <p className="text-[11px] text-emerald-800 font-medium">
-                  Logged at {lastSubmittedSite.timestamp} • Lead ID: <span className="font-mono font-bold">{lastSubmittedSite.id}</span>
+                <h3 className="font-bold text-slate-900 text-xs">Site Visit Successfully Saved</h3>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Logged at {lastSubmittedSite.timestamp} • Lead ID: <span className="font-mono font-semibold">{lastSubmittedSite.id}</span>
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setLastSubmittedSite(null)}
-              className="text-xs text-emerald-700 hover:text-emerald-900 font-bold p-1 cursor-pointer"
+              className="text-xs text-slate-400 hover:text-slate-800 p-1 cursor-pointer"
             >
               ✕
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Site Location</span>
-              <span className="font-bold text-slate-900 truncate block">{lastSubmittedSite.siteAddress}</span>
+            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+              <span className="text-[11px] text-slate-500 block">Site Location</span>
+              <span className="font-semibold text-slate-800 truncate block">{lastSubmittedSite.siteAddress}</span>
             </div>
-            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Contact &amp; Mobile</span>
-              <span className="font-bold text-slate-900 truncate block">
+            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+              <span className="text-[11px] text-slate-500 block">Contact &amp; Mobile</span>
+              <span className="font-semibold text-slate-800 truncate block">
                 {lastSubmittedSite.contactName} (+91 {lastSubmittedSite.contactPhone})
               </span>
             </div>
-            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Stage &amp; Area</span>
-              <span className="font-bold text-slate-900 truncate block">
+            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+              <span className="text-[11px] text-slate-500 block">Stage &amp; Area</span>
+              <span className="font-semibold text-slate-800 truncate block">
                 {lastSubmittedSite.constructionStage} {lastSubmittedSite.siteArea ? `• ${lastSubmittedSite.siteArea} sq.ft` : ''}
               </span>
             </div>
-            <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-100">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Brands &amp; Rate</span>
-              <span className="font-bold text-slate-900 truncate block">
+            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+              <span className="text-[11px] text-slate-500 block">Brands &amp; Rate</span>
+              <span className="font-semibold text-slate-800 truncate block">
                 {lastSubmittedSite.cementBrand} {lastSubmittedSite.cementRate ? `(₹${lastSubmittedSite.cementRate})` : ''} • {lastSubmittedSite.tmtBrand}
               </span>
             </div>
@@ -576,14 +576,14 @@ export default function FieldAgentPage() {
                 setLastSubmittedSite(null);
                 window.scrollTo({ top: 300, behavior: 'smooth' });
               }}
-              className="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+              className="flex-1 py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Log Another Site Visit</span>
             </button>
             <a
               href="/leads"
-              className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs rounded-xl shadow-2xs flex items-center justify-center gap-1 cursor-pointer transition-all"
+              className="py-2 px-3 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-semibold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
             >
               <span>View Directory</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -594,7 +594,7 @@ export default function FieldAgentPage() {
 
       {/* Form Error Banner */}
       {formError && (
-        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-2.5 text-rose-900 text-xs font-bold animate-in fade-in duration-100">
+        <div className="p-3 bg-rose-50/80 border border-rose-200 rounded-xl flex items-center gap-2.5 text-rose-900 text-xs font-semibold">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{formError}</span>
         </div>
@@ -603,7 +603,7 @@ export default function FieldAgentPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
 
         {/* CARD 1: SITE LOCATION & DATE */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
+        <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-blue-600" />
@@ -687,7 +687,7 @@ export default function FieldAgentPage() {
         </div>
 
         {/* CARD 2: STAKEHOLDERS (IHB, CONTRACTOR, ENGINEER) */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
+        <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-blue-600" />
@@ -698,7 +698,7 @@ export default function FieldAgentPage() {
 
           {/* 1. IHB (Owner) */}
           <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-700 block">
               1. IHB / Property Owner
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -725,7 +725,7 @@ export default function FieldAgentPage() {
 
           {/* 2. Contractor */}
           <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-700 block">
               2. Contractor (Thekedar)
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -752,7 +752,7 @@ export default function FieldAgentPage() {
 
           {/* 3. Site Engineer */}
           <div className="p-3 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+            <span className="text-xs font-semibold text-slate-700 block">
               3. Site Engineer (Optional)
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -789,7 +789,7 @@ export default function FieldAgentPage() {
         </div>
 
         {/* CARD 3: WORKING STAGE & SITE AREA */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
+        <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <HardHat className="w-4 h-4 text-blue-600" />
@@ -840,7 +840,7 @@ export default function FieldAgentPage() {
         </div>
 
         {/* CARD 4: MATERIALS, BRANDS & RATES */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
+        <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-blue-600" />
@@ -929,7 +929,7 @@ export default function FieldAgentPage() {
         </div>
 
         {/* CARD 5: VEER PRODUCTS & NOTES */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
+        <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-blue-600" />
@@ -994,9 +994,9 @@ export default function FieldAgentPage() {
           <button
             type="submit"
             disabled={submitting || !!duplicateLead}
-            className={`w-full py-3.5 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer ${duplicateLead
-                ? 'bg-slate-300 cursor-not-allowed text-slate-500 shadow-none'
-                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/25'
+            className={`w-full py-3 rounded-xl text-white font-semibold text-xs shadow-2xs flex items-center justify-center gap-2 transition-colors cursor-pointer ${duplicateLead
+                ? 'bg-slate-200 cursor-not-allowed text-slate-400 shadow-none'
+                : 'bg-slate-900 hover:bg-slate-800'
               }`}
           >
             {submitting ? (
@@ -1015,7 +1015,7 @@ export default function FieldAgentPage() {
       </form>
 
       {/* Live Recent Submissions Feed */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
+      <div className="bg-white rounded-xl border border-slate-200/90 p-4 sm:p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-blue-600" />
