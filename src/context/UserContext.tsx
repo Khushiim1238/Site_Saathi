@@ -2,77 +2,85 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/lib/types';
-import { Lock, ShieldCheck, User as UserIcon, Loader2, ArrowRight } from 'lucide-react';
 
 interface UserContextType {
+  staffName: string;
+  setStaffName: (name: string) => void;
+  openStaffNamePrompt: () => void;
   currentUser: User | null;
   users: User[];
   setCurrentUser: (user: User) => void;
+  selectUserById: (userId: string) => void;
   loading: boolean;
   isAuthenticated: boolean;
   authChecked: boolean;
-  loginWithPin: (userId: string, pin: string) => Promise<{ success: boolean; error?: string }>;
+  isPickerOpen: boolean;
+  openUserPicker: () => void;
+  closeUserPicker: () => void;
+  createNewUser: (name: string, role: string, phone?: string) => Promise<{ success: boolean; user?: User; error?: string }>;
+  loginWithPin: (userId: string, pin?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   refreshUsers: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const DEFAULT_INITIAL_USER: User = {
-  id: 'user_admin_1',
-  name: 'Mr. Sharma (Director/Manager)',
-  email: 'sharma@business.com',
-  phone: '9876543210',
-  role: 'MANAGER',
-  pin: '1234',
-  is_active: 1,
-  created_at: new Date().toISOString(),
-};
-
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<User[]>([DEFAULT_INITIAL_USER]);
-  const [currentUser, setCurrentUser] = useState<User>(DEFAULT_INITIAL_USER);
+  const [staffName, setStaffNameState] = useState<string>('Staff');
+  const [showFirstTimePrompt, setShowFirstTimePrompt] = useState<boolean>(false);
+  const [promptInput, setPromptInput] = useState<string>('');
+
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authChecked, setAuthChecked] = useState(false);
 
-  // Modal PIN login states
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [pinInput, setPinInput] = useState<string>('');
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('veer_staff_name') || localStorage.getItem('vbc_staff_name') || '';
+      if (saved && saved.trim()) {
+        setStaffNameState(saved.trim());
+      } else {
+        setShowFirstTimePrompt(true);
+      }
+      setAuthChecked(true);
+    }
+  }, []);
+
+  const setStaffName = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setStaffNameState(trimmed);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('veer_staff_name', trimmed);
+    }
+    setShowFirstTimePrompt(false);
+  };
+
+  const openStaffNamePrompt = () => {
+    setPromptInput(staffName !== 'Staff' ? staffName : '');
+    setShowFirstTimePrompt(true);
+  };
+
+  const currentUser: User = {
+    id: 'user_agent_1',
+    name: staffName,
+    email: `${staffName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'staff'}@veer.local`,
+    phone: '',
+    role: 'FIELD_AGENT',
+    pin: '1234',
+    is_active: 1,
+    created_at: new Date().toISOString(),
+  };
 
   const fetchUsers = async () => {
     try {
       const res = await fetch('/api/auth/users');
       const data = await res.json();
-      if (data.success && data.users.length > 0) {
+      if (data.success && Array.isArray(data.users)) {
         setUsers(data.users);
-
-        // Check stored auth
-        if (typeof window !== 'undefined') {
-          const isAuthed = localStorage.getItem('crm_auth_pin_verified') === 'true';
-          const savedUserId = localStorage.getItem('crm_active_user_id');
-          const matched = data.users.find((u: User) => u.id === savedUserId);
-
-          if (isAuthed && matched) {
-            setCurrentUser(matched);
-            setSelectedUserId(matched.id);
-            setIsAuthenticated(true);
-          } else {
-            // Pick default user to select in dialog
-            const defaultUser = matched || data.users[0];
-            setSelectedUserId(defaultUser.id);
-            setCurrentUser(defaultUser);
-            setIsAuthenticated(false);
-          }
-        }
       }
     } catch (err) {
-      console.error('Failed to load users:', err);
-    } finally {
-      setLoading(false);
-      setAuthChecked(true);
+      // silent
     }
   };
 
@@ -80,73 +88,71 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     fetchUsers();
   }, []);
 
-  const loginWithPin = async (userId: string, pin: string) => {
-    setVerifying(true);
-    setLoginError(null);
-
-    const targetUser = users.find((u) => u.id === userId);
-    if (!targetUser) {
-      setVerifying(false);
-      const err = 'User profile not found.';
-      setLoginError(err);
-      return { success: false, error: err };
-    }
-
-    // Default PIN is 1234
-    const validPin = targetUser.pin || '1234';
-    if (pin.trim() !== validPin.trim()) {
-      setVerifying(false);
-      const err = 'Incorrect PIN. Please try again.';
-      setLoginError(err);
-      return { success: false, error: err };
-    }
-
-    // PIN matched
-    setCurrentUser(targetUser);
-    setIsAuthenticated(true);
-    setPinInput('');
-    setLoginError(null);
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('crm_auth_pin_verified', 'true');
-      localStorage.setItem('crm_active_user_id', targetUser.id);
-    }
-
-    setVerifying(false);
-    return { success: true };
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    setPinInput('');
-    setLoginError(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('crm_auth_pin_verified');
-    }
-  };
-
-  const handleSetUser = (user: User) => {
-    setCurrentUser(user);
-    setSelectedUserId(user.id);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('crm_active_user_id', user.id);
-    }
-  };
-
   return (
     <UserContext.Provider
       value={{
+        staffName,
+        setStaffName,
+        openStaffNamePrompt,
         currentUser,
         users,
-        setCurrentUser: handleSetUser,
+        setCurrentUser: () => {},
+        selectUserById: (id: string) => {
+          const u = users.find((x) => x.id === id);
+          if (u) setStaffName(u.name);
+        },
         loading,
-        isAuthenticated,
+        isAuthenticated: true,
         authChecked,
-        loginWithPin,
-        logout,
+        isPickerOpen: showFirstTimePrompt,
+        openUserPicker: openStaffNamePrompt,
+        closeUserPicker: () => setShowFirstTimePrompt(false),
+        createNewUser: async (name: string) => {
+          setStaffName(name);
+          return { success: true };
+        },
+        loginWithPin: async () => ({ success: true }),
+        logout: openStaffNamePrompt,
         refreshUsers: fetchUsers,
       }}
     >
+      {/* Clean 1-Time Name Prompt (Only shown once on first visit if no name exists) */}
+      {showFirstTimePrompt && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 space-y-3.5">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">Staff / Executive Name</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Please enter your name so your site visits are recorded under you.</p>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (promptInput.trim()) {
+                  setStaffName(promptInput);
+                }
+              }}
+              className="space-y-3"
+            >
+              <input
+                type="text"
+                value={promptInput}
+                onChange={(e) => setPromptInput(e.target.value)}
+                placeholder="Your Name (e.g. Ramraj, Vikram)"
+                className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-800 font-bold text-slate-900"
+                autoFocus
+                required
+              />
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                Continue
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {children}
     </UserContext.Provider>
   );

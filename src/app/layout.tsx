@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { UserProvider } from '@/context/UserContext';
 import Navbar from '@/components/Navbar';
-import PinLockModal from '@/components/PinLockModal';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -43,7 +42,6 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <UserProvider>
-          <PinLockModal />
           <Navbar />
           <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
         </UserProvider>

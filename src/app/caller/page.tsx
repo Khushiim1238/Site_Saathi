@@ -21,7 +21,7 @@ import {
 import { Lead } from '@/lib/types';
 
 export default function CallingDeskPage() {
-  const { currentUser } = useUser();
+  const { staffName, openStaffNamePrompt } = useUser();
 
   const [activeTab, setActiveTab] = useState<'POOL' | 'MY_CALLS' | 'REMINDERS'>('POOL');
 
@@ -43,13 +43,12 @@ export default function CallingDeskPage() {
   }, []);
 
   const fetchAllData = async (isBackground = false) => {
-    if (!currentUser) return;
     if (!isBackground) setInitialLoading(true);
 
     try {
       const poolPromise = fetch('/api/leads?status=UNCLAIMED').then((r) => r.json());
-      const myLeadsPromise = fetch(`/api/leads?claimed_by_id=${currentUser.id}`).then((r) => r.json());
-      const fuPromise = fetch(`/api/followups?caller_id=${currentUser.id}&status=PENDING`).then((r) => r.json());
+      const myLeadsPromise = fetch(`/api/leads?claimed_by_name=${encodeURIComponent(staffName || 'Staff')}`).then((r) => r.json());
+      const fuPromise = fetch('/api/followups?status=PENDING').then((r) => r.json());
 
       const [poolData, myData, fuData] = await Promise.all([poolPromise, myLeadsPromise, fuPromise]);
 
@@ -65,7 +64,7 @@ export default function CallingDeskPage() {
 
   useEffect(() => {
     fetchAllData(false);
-  }, [currentUser]);
+  }, [staffName]);
 
   // Real-time auto-refresh in background every 4s
   useEffect(() => {
@@ -73,16 +72,15 @@ export default function CallingDeskPage() {
       fetchAllData(true);
     }, 4000);
     return () => clearInterval(timer);
-  }, [currentUser]);
+  }, [staffName]);
 
   // Claim Lead
   const handleClaim = async (leadId: string) => {
-    if (!currentUser) return;
     try {
       const res = await fetch(`/api/leads/${leadId}/claim`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caller_id: currentUser.id }),
+        body: JSON.stringify({ caller_id: 'user_caller_1', caller_name: staffName || 'Staff' }),
       });
       const data = await res.json();
       if (data.success) {
@@ -98,7 +96,7 @@ export default function CallingDeskPage() {
 
   // Submit Outcome
   const submitOutcome = async (status: string, extraNote = '') => {
-    if (!activeLead || !currentUser) return;
+    if (!activeLead) return;
     setSubmittingOutcome(true);
 
     let scheduledDate: string | null = null;
@@ -114,7 +112,8 @@ export default function CallingDeskPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          caller_id: currentUser.id,
+          caller_id: 'user_caller_1',
+          caller_name: staffName || 'Staff',
           call_status: status,
           notes: callNotes ? `${callNotes}. ${extraNote}` : extraNote || 'Outcome updated',
           duration_seconds: 60,
@@ -142,9 +141,17 @@ export default function CallingDeskPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">Calling Desk</h1>
-          <p className="text-xs text-zinc-500">
-            Caller: <span className="font-semibold text-zinc-800">{mounted && currentUser?.name ? currentUser.name : 'Staff'}</span>
-          </p>
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-zinc-500">
+            <span>Caller:</span>
+            <button
+              type="button"
+              onClick={openStaffNamePrompt}
+              className="flex items-center gap-1.5 text-xs font-bold text-zinc-800 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded-lg px-2.5 py-0.5 cursor-pointer"
+            >
+              <span>{staffName || 'Staff'}</span>
+              <span className="text-zinc-400 text-[10px]">✎</span>
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-zinc-100 rounded-full text-zinc-600 text-[11px] font-medium border border-zinc-200/70">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>

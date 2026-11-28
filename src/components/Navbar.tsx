@@ -9,17 +9,11 @@ import {
   PhoneCall, 
   PlusCircle, 
   FolderKanban, 
-  ChevronDown, 
-  Check,
-  Lock,
-  LogOut,
-  User as UserIcon
 } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { currentUser, users, setCurrentUser, logout } = useUser();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { staffName, openStaffNamePrompt } = useUser();
   const [unclaimedCount, setUnclaimedCount] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -68,13 +62,7 @@ export default function Navbar() {
     },
   ];
 
-  const displayName = mounted && currentUser?.name ? currentUser.name : 'Account';
-  const roleLabel =
-    currentUser?.role === 'MANAGER'
-      ? 'Manager'
-      : currentUser?.role === 'CALLER'
-      ? 'Telecaller'
-      : 'Field Agent';
+  const displayName = mounted && staffName ? staffName : 'Staff';
 
   return (
     <>
@@ -99,57 +87,21 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* User Role & Identity Badge */}
-          <div className="relative">
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all active:scale-[0.98] cursor-pointer"
-            >
-              <div className="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0">
-                {mounted && currentUser?.name ? currentUser.name.charAt(0) : 'U'}
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-slate-800 truncate max-w-[110px] leading-tight">
-                  {displayName}
-                </span>
-                <span className="text-[10px] font-medium text-slate-500 leading-none">
-                  {roleLabel}
-                </span>
-              </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white shadow-xl border border-slate-200 p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    Verified Profile
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    PIN Verified
-                  </span>
-                </div>
-
-                <div className="p-2 bg-slate-50 rounded-xl my-1 border border-slate-100">
-                  <div className="text-xs font-bold text-slate-900">{currentUser?.name}</div>
-                  <div className="text-[11px] text-slate-500">{roleLabel} • {currentUser?.phone ? `+91 ${currentUser.phone}` : 'Active'}</div>
-                </div>
-
-                {/* Lock / Switch Account Button */}
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition-colors cursor-pointer mt-1"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Lock / Switch User (PIN)</span>
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Staff Name Badge with 1-Tap Edit */}
+          <button
+            type="button"
+            onClick={openStaffNamePrompt}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-all active:scale-[0.98] cursor-pointer group"
+            title="Click to change your name"
+          >
+            <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-xs font-bold text-slate-800 truncate max-w-[120px] leading-tight">
+              {displayName}
+            </span>
+            <span className="text-[11px] text-slate-400 group-hover:text-slate-800 font-semibold">✎</span>
+          </button>
         </div>
       </header>
 

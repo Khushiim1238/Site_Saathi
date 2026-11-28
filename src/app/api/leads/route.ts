@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     let query = `
       SELECT 
         l.*,
-        u_cap.name as captured_by_name,
-        u_clm.name as claimed_by_name
+        COALESCE(l.captured_by_name, u_cap.name, 'Staff') as captured_by_name,
+        COALESCE(l.claimed_by_name, u_clm.name) as claimed_by_name
       FROM leads l
       LEFT JOIN users u_cap ON l.captured_by_id = u_cap.id
       LEFT JOIN users u_clm ON l.claimed_by_id = u_clm.id
@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
       notes,
       photo_url,
       captured_by_id,
+      staff_name,
+      captured_by_name,
       // Vardhman Site Visit Slip Fields
       ihb_name,
       ihb_phone,
@@ -86,6 +88,9 @@ export async function POST(request: NextRequest) {
       tmt_brand,
       cover_block_sizes,
     } = body;
+
+    const resolvedStaffName = staff_name?.trim() || captured_by_name?.trim() || 'Staff';
+    const resolvedAgentId = captured_by_id || 'user_agent_1';
 
     // Resolve primary contact name and phone from IHB / Contractor / Direct fields
     const resolvedContactName =
@@ -110,9 +115,9 @@ export async function POST(request: NextRequest) {
       (contractor_name?.trim() ? `${contractor_name.trim()} Site` : null) ||
       (site_address?.trim() ? `${site_address.trim().split(',')[0]} Site` : 'Site Visit');
 
-    if (!site_address?.trim() || !captured_by_id) {
+    if (!site_address?.trim()) {
       return NextResponse.json(
-        { success: false, error: 'Site address/location and Agent ID are required.' },
+        { success: false, error: 'Site address/location is required.' },
         { status: 400 }
       );
     }
@@ -153,7 +158,7 @@ export async function POST(request: NextRequest) {
         ihb_name, ihb_phone, contractor_name, contractor_phone,
         engineer_name, engineer_phone, site_area, cement_brand,
         cement_rate, tmt_brand, cover_block_sizes,
-        status, captured_by_id, created_at, updated_at
+        status, captured_by_id, captured_by_name, created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
@@ -161,7 +166,7 @@ export async function POST(request: NextRequest) {
         ?, ?, ?, ?,
         ?, ?, ?, ?,
         ?, ?, ?,
-        'UNCLAIMED', ?, ?, ?
+        'UNCLAIMED', ?, ?, ?, ?
       )
     `).run(
       leadId,
@@ -189,7 +194,8 @@ export async function POST(request: NextRequest) {
       cement_rate ? cement_rate.trim() : null,
       tmt_brand ? tmt_brand.trim() : null,
       cover_block_sizes ? cover_block_sizes.trim() : null,
-      captured_by_id,
+      resolvedAgentId,
+      resolvedStaffName,
       now,
       now
     );
@@ -198,8 +204,8 @@ export async function POST(request: NextRequest) {
     const activityId = 'act_' + randomUUID().substring(0, 8);
     db.prepare(`
       INSERT INTO activities (id, lead_id, user_id, action, description, created_at)
-      VALUES (?, ?, ?, 'LEAD_CREATED', 'Field agent logged new site lead.', ?)
-    `).run(activityId, leadId, captured_by_id, now);
+      VALUES (?, ?, ?, 'LEAD_CREATED', ?, ?)
+    `).run(activityId, leadId, resolvedAgentId, `${resolvedStaffName} logged new site lead.`, now);
 
     return NextResponse.json({ success: true, leadId });
   } catch (error: any) {

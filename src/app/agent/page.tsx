@@ -74,7 +74,7 @@ interface SubmittedSiteInfo {
 }
 
 export default function FieldAgentPage() {
-  const { currentUser } = useUser();
+  const { staffName, setStaffName } = useUser();
   const [mounted, setMounted] = useState(false);
 
   // Form Fields mapped to Vardhman Site Visit Slip
@@ -141,7 +141,7 @@ export default function FieldAgentPage() {
     }
 
     try {
-      const url = currentUser?.id ? `/api/leads?captured_by_id=${currentUser.id}` : '/api/leads';
+      const url = staffName ? `/api/leads?captured_by_name=${encodeURIComponent(staffName)}` : '/api/leads';
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && Array.isArray(data.leads)) {
@@ -168,7 +168,7 @@ export default function FieldAgentPage() {
     setMounted(true);
     setVisitDate(new Date().toISOString().split('T')[0]);
     fetchRecentSubmissions();
-  }, [currentUser?.id]);
+  }, [staffName]);
 
   // Restore unsaved draft on load
   useEffect(() => {
@@ -325,9 +325,9 @@ export default function FieldAgentPage() {
   };
 
   const loadMyHistory = async () => {
-    if (!currentUser) return;
     try {
-      const res = await fetch(`/api/leads?captured_by_id=${currentUser.id}`);
+      const url = staffName ? `/api/leads?captured_by_name=${encodeURIComponent(staffName)}` : '/api/leads';
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setMyLeads(data.leads);
@@ -342,7 +342,7 @@ export default function FieldAgentPage() {
     e.preventDefault();
     setFormError(null);
 
-    const agentId = currentUser?.id || 'user_agent_1';
+    const agentId = 'user_agent_1';
 
     if (!siteAddress.trim()) {
       setFormError('Please enter the Site Address / Location.');
@@ -377,6 +377,8 @@ export default function FieldAgentPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          staff_name: staffName.trim() || 'Staff',
+          captured_by_name: staffName.trim() || 'Staff',
           ihb_name: ihbName.trim(),
           ihb_phone: cleanIhbPhone,
           contractor_name: contractorName.trim(),
@@ -474,7 +476,7 @@ export default function FieldAgentPage() {
     }
   };
 
-  const agentDisplayName = mounted && currentUser?.name ? currentUser.name : 'Field Agent';
+  const agentDisplayName = mounted && staffName ? staffName : 'Field Agent';
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-6 pb-28 space-y-4">
@@ -489,8 +491,8 @@ export default function FieldAgentPage() {
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             Site Visit Entry
           </h1>
-          <p className="text-xs text-slate-500 font-medium">
-            Field Agent: <span className="font-bold text-slate-800">{agentDisplayName}</span>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Field Operations • Veer Cover Block
           </p>
         </div>
 
@@ -616,6 +618,21 @@ export default function FieldAgentPage() {
                 className="bg-transparent font-bold text-slate-700 focus:outline-none"
               />
             </div>
+          </div>
+
+          {/* Executive / Staff Name Field */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Visited By (Executive / Staff Name) <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={staffName}
+              onChange={(e) => setStaffName(e.target.value)}
+              placeholder="e.g. Ramraj, Vikram"
+              className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-slate-800 font-bold text-slate-900"
+              required
+            />
           </div>
 
           {/* Site Address & Landmark */}

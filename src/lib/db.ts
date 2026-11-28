@@ -148,6 +148,8 @@ function initTables(db: DatabaseSync) {
     'cement_rate TEXT',
     'tmt_brand TEXT',
     'cover_block_sizes TEXT',
+    'captured_by_name TEXT',
+    'claimed_by_name TEXT',
   ];
   for (const col of extraCols) {
     try {
